@@ -41,6 +41,12 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'doctor-appointment-system-eight-vert.vercel.app',
+]
+
 ROOT_URLCONF = "medical.urls"
 
 TEMPLATES = [
@@ -122,3 +128,5 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https") if env_bool("DJANGO_BEHIND_HTTPS_PROXY", True) else None
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = "DENY"
+
+CSRF_TRUSTED_ORIGINS = ['https://doctor-appointment-system-eight-vert.vercel.app']
