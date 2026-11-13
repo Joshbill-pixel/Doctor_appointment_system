@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{{ appt.patient_name }} · {{ appt.display_id }}{% endblock %}
+{% block content %}
+<section class="container page-head">
+  <a class="small" href="{% url 'doctor_dashboard' %}?date={{ appt.date|date:'Y-m-d' }}">← Back to schedule</a>
+  <div class="detail-head mt-1">
+    <div>
+      <span class="eyebrow">Patient visit</span>
+      <h1 style="font-size:2.1rem;margin-bottom:8px">{{ appt.patient_name }}</h1>
+      <span class="badge {{ appt.status_tone }}">{{ appt.get_status_display }}</span>
+    </div>
+    <div class="id-chip"><small>ID</small>{{ appt.display_id }}</div>
+  </div>
+</section>
+
+<section class="container" style="padding:22px 22px 64px">
+  <div class="split">
+    <div class="stack">
+      <div class="card">
+        <div class="card-title"><h3>Visit</h3></div>
+        <dl class="kv">
+          <dt>Date</dt><dd>{{ appt.date|date:"l, j F Y" }}</dd>
+          <dt>Time</dt><dd>{{ appt.start_time|time:"g:i A" }} – {{ appt.end_time|time:"g:i A" }}</dd>
+          <dt>Reason given</dt><dd class="muted-value">{{ appt.reason|linebreaksbr }}</dd>
+          {% if appt.cancel_reason %}<dt>Cancellation note</dt><dd class="muted-value">{{ appt.cancel_reason }}</dd>{% endif %}
+        </dl>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><h3>Private clinical notes</h3><span class="tiny muted">Not visible to the patient</span></div>
+        <form method="post" class="form">
+          {% csrf_token %}
+          {% include "partials/form_fields.html" with form=notes_form %}
+          <div><button class="btn btn-primary" type="submit">Save notes</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <h3>Patient</h3>
+        <dl class="kv" style="margin-top:8px">
+          <dt>Email</dt><dd style="word-break:break-all">{{ appt.patient.email|default:"—" }}</dd>
+          <dt>Phone</dt><dd>{{ profile.phone|default:"—" }}</dd>
+          <dt>Date of birth</dt><dd>{{ profile.date_of_birth|date:"j M Y"|default:"—" }}</dd>
+          <dt>Gender</dt><dd>{{ profile.get_gender_display|default:"—" }}</dd>
+        </dl>
+      </div>
+
+      <div class="card">
+        <h3>Record outcome</h3>
+        {% if appt.status == 'scheduled' %}
+          <div class="panel-actions mt-2">
+            <form method="post" action="{% url 'doctor_appointment_status' appt.reference %}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="complete">
+              <button class="btn btn-success btn-block" type="submit">Mark as completed</button>
+            </form>
+            <form method="post" action="{% url 'doctor_appointment_status' appt.reference %}" data-confirm="Mark this patient as a no-show?">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="no_show">
+              <button class="btn btn-ghost btn-block" type="submit">Patient did not attend</button>
+            </form>
+          </div>
+          <details class="disclose details-action">
+            <summary>Cancel this appointment</summary>
+            <form method="post" action="{% url 'doctor_appointment_status' appt.reference %}" class="form" data-confirm="Cancel this appointment and notify the patient?">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="cancel">
+              <div class="form-group"><label for="cancel-reason">Reason shown to the patient</label>
+                <input id="cancel-reason" name="reason" type="text" maxlength="255" placeholder="e.g. Doctor unavailable"></div>
+              <button class="btn btn-danger btn-block" type="submit">Cancel appointment</button>
+            </form>
+          </details>
+        {% else %}
+          <p class="muted small mb-0">This visit is already recorded as <strong>{{ appt.get_status_display|lower }}</strong>.</p>
+        {% endif %}
+        {% if appt.rating %}
+          <div class="note-box mt-2"><strong>Patient rating:</strong> {{ appt.rating }}/5{% if appt.feedback %}<br>{{ appt.feedback }}{% endif %}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

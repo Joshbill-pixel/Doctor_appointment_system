@@ -1,0 +1,25 @@
+{# Expects: form (with date and start_time), max_date, and either doctor_id (fixed doctor) or doctor_from_radio=True. #}
+<div class="slot-picker" data-slot-picker
+     data-api-url="{% url 'api_slots' %}"
+     {% if doctor_id %}data-doctor-id="{{ doctor_id }}"{% else %}data-doctor-radio="doctor"{% endif %}
+     data-exclude-ref="{{ exclude_ref|default:'' }}">
+  <div class="form-group{% if form.date.errors %} has-error{% endif %}">
+    <label for="{{ form.date.id_for_label }}">{{ form.date.label }}</label>
+    <input type="date" name="date" id="{{ form.date.id_for_label }}" value="{{ form.date.value|default_if_none:'' }}"
+           min="{% now 'Y-m-d' %}" max="{{ max_date|date:'Y-m-d' }}" required data-date>
+    {% for error in form.date.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </div>
+
+  <div>
+    <div class="row-between mb-2">
+      <span class="small" style="font-weight:600">Available times</span>
+      <span class="slot-meta" data-slot-status aria-live="polite"></span>
+    </div>
+    <div class="slot-grid" data-slots role="group" aria-label="Available time slots">
+      <div class="slot-empty">Choose a date to see free times.</div>
+    </div>
+    <p class="field-error mt-1" data-slot-msg role="alert"></p>
+    {% if form.start_time.errors %}{% for error in form.start_time.errors %}<p class="field-error">{{ error }}</p>{% endfor %}{% endif %}
+  </div>
+  <input type="hidden" name="start_time" value="{{ form.start_time.value|default_if_none:'' }}" data-start>
+</div>

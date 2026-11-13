@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Book an appointment{% endblock %}
+{% block content %}
+<section class="container page-head">
+  <span class="eyebrow">New appointment</span>
+  <h1 style="font-size:2.2rem;margin-bottom:6px">Book a consultation</h1>
+  <p>Pick a department and doctor, then a time that suits you. Your letter is ready as soon as you confirm.</p>
+</section>
+
+<section class="container" style="padding:24px 22px 64px">
+  <form method="post" action="{% url 'book' %}" class="booking-layout" novalidate data-booking-form>
+    {% csrf_token %}
+    <div class="stack">
+      {% if form.non_field_errors %}
+        <div class="alert danger" role="alert"><span>{{ form.non_field_errors|join:" " }}</span></div>
+      {% endif %}
+
+      <div class="card">
+        <div class="step-title"><span class="num">1</span><h3>Choose a department</h3></div>
+        <div class="row" role="group" aria-label="Filter doctors by department">
+          <button type="button" class="chip active" data-dept-filter="">All</button>
+          {% for dept in departments %}
+            <button type="button" class="chip" data-dept-filter="{{ dept.slug }}"><span class="emoji" aria-hidden="true">{{ dept.icon }}</span>{{ dept.title }}</button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="step-title"><span class="num">2</span><h3>Choose your doctor</h3></div>
+        {% if form.doctor.errors %}<p class="field-error mb-2">{{ form.doctor.errors|join:" " }}</p>{% endif %}
+        <div class="doctor-options" role="radiogroup" aria-label="Doctors">
+          {% for d in doctors %}
+            <label class="doctor-option" data-doctor-card data-dept="{{ d.department.slug }}">
+              <input type="radio" name="doctor" value="{{ d.pk }}" required
+                     data-doctor-name="{{ d.display_name }}" data-doctor-dept="{{ d.department.title }}"
+                     {% if form.doctor.value|stringformat:"s" == d.pk|stringformat:"s" %}checked{% endif %}>
+              <span class="inner">
+                <span class="avatar sm" aria-hidden="true">{{ d.initials }}</span>
+                <span><strong>{{ d.display_name }}</strong><small>{{ d.specialty|default:d.department.title }} · {{ d.slot_minutes }} min</small></span>
+              </span>
+            </label>
+          {% empty %}
+            <p class="muted">No doctors are accepting bookings right now. Please check back later.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="step-title"><span class="num">3</span><h3>Pick a date and time</h3></div>
+        {% include "partials/slot_picker.html" with doctor_id="" doctor_from_radio=True exclude_ref="" %}
+      </div>
+
+      <div class="card">
+        <div class="step-title"><span class="num">4</span><h3>Tell us why you are coming</h3></div>
+        <div class="form">
+          <div class="form-group{% if form.reason.errors %} has-error{% endif %}">
+            <label for="{{ form.reason.id_for_label }}">{{ form.reason.label }}</label>
+            {{ form.reason }}
+            <p class="form-help">Mention your symptoms, how long you have had them and any medicines you take.</p>
+            {% for error in form.reason.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+        </div>
+        <div class="form-actions mt-3">
+          <button class="btn btn-primary btn-lg" type="submit">Confirm appointment</button>
+          <a class="btn btn-ghost" href="{% url 'dashboard' %}">Cancel</a>
+        </div>
+      </div>
+    </div>
+
+    <aside class="summary card" aria-label="Booking summary">
+      <h3>Your booking</h3>
+      <ul class="summary-list mt-2">
+        <li><span>Doctor</span><span data-summary-doctor>Not selected</span></li>
+        <li><span>Department</span><span data-summary-dept>—</span></li>
+        <li><span>Date</span><span data-summary-date>—</span></li>
+        <li><span>Time</span><span data-summary-time>—</span></li>
+      </ul>
+      <div class="tint mt-3" style="font-size:.9rem">
+        <strong>What happens next</strong>
+        <p class="mb-0 mt-1 muted">You get an instant confirmation, a printable letter with its ID and verification token, and a reminder the day before.</p>
+      </div>
+      <p class="tiny muted mt-2 mb-0">Changes or cancellations are possible up to {{ cutoff_hours }} hours before your visit.</p>
+    </aside>
+  </form>
+</section>
+{% endblock %}

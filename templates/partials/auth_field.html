@@ -1,0 +1,20 @@
+{% if field.field.widget.input_type == "checkbox" %}
+  <div class="form-group checkbox-row{% if field.errors %} has-error{% endif %}">
+    {{ field }}
+    <div>
+      <label for="{{ field.id_for_label }}">{{ field.label|safe }}</label>
+      {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+  </div>
+{% else %}
+  <div class="form-group{% if field.errors %} has-error{% endif %}">
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {% if field.name == "password1" %}
+      <div class="password-meter" aria-hidden="true"><span data-meter-bar></span></div>
+      <p class="password-hint" data-meter-text>Use at least 8 characters, mixing letters, numbers and symbols.</p>
+    {% endif %}
+    {% if field.help_text %}<p class="form-help">{{ field.help_text|safe }}</p>{% endif %}
+    {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </div>
+{% endif %}

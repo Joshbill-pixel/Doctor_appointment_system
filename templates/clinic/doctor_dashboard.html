@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Doctor portal{% endblock %}
+{% block content %}
+<section class="container greeting">
+  <div class="row-between">
+    <div>
+      <span class="eyebrow">{{ doctor.department.title }}</span>
+      <h1 style="font-size:2.2rem;margin:0">{{ doctor.display_name }}</h1>
+      <p>{% if is_today %}Today · {% endif %}{{ day|date:"l, j F Y" }}</p>
+    </div>
+    <nav class="day-nav" aria-label="Choose day">
+      <a class="btn btn-ghost btn-sm" href="?date={{ prev_day|date:'Y-m-d' }}" aria-label="Previous day">← Prev</a>
+      {% if not is_today %}<a class="btn btn-outline btn-sm" href="{% url 'doctor_dashboard' %}">Today</a>{% endif %}
+      <a class="btn btn-ghost btn-sm" href="?date={{ next_day|date:'Y-m-d' }}" aria-label="Next day">Next →</a>
+    </nav>
+  </div>
+</section>
+
+<section class="container" style="padding-bottom:64px">
+  <div class="kpi">
+    <div class="tile"><strong>{{ stats.today }}</strong><span>Bookings today</span></div>
+    <div class="tile"><strong>{{ stats.waiting }}</strong><span>Still scheduled ({{ day|date:"j M" }})</span></div>
+    <div class="tile"><strong>{{ stats.completed_week }}</strong><span>Completed, last 7 days</span></div>
+    <div class="tile"><strong>{{ stats.no_shows_month }}</strong><span>No-shows this month</span></div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="card card-flush">
+      <div class="card-title" style="padding:22px 22px 0"><h3>Schedule · {{ day|date:"j M" }}</h3></div>
+      <div style="margin-top:12px" class="timeline">
+        {% for appt in day_appointments %}
+          <a class="slot-row" href="{% url 'doctor_appointment' appt.reference %}">
+            <span class="time">{{ appt.start_time|time:"g:i A" }}</span>
+            <div>
+              <h4>{{ appt.patient_name }}</h4>
+              <p>{{ appt.reason }}</p>
+            </div>
+            <span class="badge {{ appt.status_tone }}">{{ appt.get_status_display }}</span>
+          </a>
+        {% empty %}
+          <div class="empty"><div class="big">☕</div><h3>No appointments</h3><p>Nothing is booked for this day.</p></div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card card-flush">
+        <div class="card-title" style="padding:22px 22px 0"><h3>Next 7 days</h3></div>
+        <div style="margin-top:12px" class="timeline">
+          {% for appt in upcoming %}
+            <a class="slot-row" href="{% url 'doctor_appointment' appt.reference %}">
+              <span class="time" style="font-size:.9rem">{{ appt.date|date:"D j M" }}</span>
+              <div><h4>{{ appt.patient_name }}</h4><p>{{ appt.start_time|time:"g:i A" }} · {{ appt.reason }}</p></div>
+              <span></span>
+            </a>
+          {% empty %}
+            <p class="muted" style="padding:6px 22px 22px;margin:0">No upcoming bookings in the next week.</p>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="card">
+        <h3>Working hours</h3>
+        <p class="small muted mb-0">Ask an administrator to change your weekly availability or slot length. Your bookings update automatically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

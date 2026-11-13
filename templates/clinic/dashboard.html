@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}My dashboard{% endblock %}
+{% block content %}
+<section class="container greeting" style="margin: auto; max-width: 88%; padding-top: 32px; padding-bottom: 32px">
+  <div class="row-between">
+    <div>
+      <span class="eyebrow">Your health, organised</span>
+      <h1 style="font-size:2.2rem;margin:0">Welcome back, {{ user.first_name|default:"there" }}</h1>
+      <p>{% now "l, j F Y" %}</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'book' %}">+ Book a new visit</a>
+  </div>
+</section>
+
+<section class="container" style="padding-bottom:64px">
+  <div class="stat-tiles">
+    <div class="tile"><strong>{{ stats.upcoming }}</strong><span>Upcoming visits</span></div>
+    <div class="tile"><strong>{{ stats.completed }}</strong><span>Completed consultations</span></div>
+    <div class="tile"><strong>{{ stats.total }}</strong><span>Total appointments</span></div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="stack">
+      {% if next_appointment %}
+        <article class="card hero-card">
+          <span class="badge info" style="background:rgba(255,255,255,.18);color:#fff">Next appointment</span>
+          <h2 style="color:#fff;font-size:1.6rem;margin:14px 0 4px">{{ next_appointment.date|date:"l, j F" }} · {{ next_appointment.start_time|time:"g:i A" }}</h2>
+          <p class="mb-2" style="font-size:1.05rem">{{ next_appointment.doctor.display_name }} · {{ next_appointment.department.title }}</p>
+          <p class="tiny mb-2">Appointment ID <strong>{{ next_appointment.display_id }}</strong></p>
+          <div class="row">
+            <a class="btn btn-primary btn-sm" href="{% url 'appointment_letter' next_appointment.reference %}" target="_blank" rel="noopener">Download letter (PDF)</a>
+            <a class="btn btn-outline-light btn-sm" href="{{ next_appointment.get_absolute_url }}">View details</a>
+          </div>
+        </article>
+      {% else %}
+        <article class="card empty">
+          <div class="big">🗓️</div>
+          <h3>No upcoming appointments</h3>
+          <p>When you need care, book a specialist in a few taps.</p>
+          <a class="btn btn-primary" href="{% url 'book' %}">Book an appointment</a>
+        </article>
+      {% endif %}
+
+      <div class="card card-flush">
+        <div class="card-title" style="padding:22px 22px 0"><h3>Coming up</h3><a class="small" href="{% url 'my_appointments' %}?tab=upcoming">See all</a></div>
+        <div style="margin-top:12px">
+          {% for appt in upcoming %}
+            {% include "partials/appt_item.html" %}
+          {% empty %}
+            <p class="muted" style="padding:6px 22px 22px;margin:0">No other upcoming visits.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card card-flush">
+        <div class="card-title" style="padding:22px 22px 0"><h3>Notifications</h3><a class="small" href="{% url 'notifications' %}">View all</a></div>
+        <div class="notice-list" style="margin-top:12px">
+          {% for n in notifications %}
+            <a class="item{% if not n.is_read %} unread{% endif %}" href="{{ n.link|default:'#' }}" style="color:var(--ink);text-decoration:none">
+              <span class="ico" aria-hidden="true">🔔</span>
+              <div><h4>{{ n.title }}</h4><p>{{ n.message|truncatechars:90 }}</p></div>
+              <span class="tiny muted">{{ n.created_at|date:"j M" }}</span>
+            </a>
+          {% empty %}
+            <p class="muted" style="padding:6px 22px 22px;margin:0">You are all caught up.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Quick actions</h3>
+        <div class="panel-actions mt-2">
+          <a class="btn btn-ghost btn-block" href="{% url 'doctors' %}">Browse doctors</a>
+          <a class="btn btn-ghost btn-block" href="{% url 'verify' %}">Verify someone's letter</a>
+          <a class="btn btn-ghost btn-block" href="{% url 'profile' %}">Update my details</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Rate your visit{% endblock %}
+{% block content %}
+<section class="container auth-shell" style="min-height:0">
+  <div class="card narrow" style="max-width:620px;width:100%">
+    <a class="small" href="{{ appt.get_absolute_url }}">← Back to appointment</a>
+    <h1 style="font-size:1.8rem;margin:12px 0 4px">Rate your visit</h1>
+    <p class="muted">{{ appt.doctor.display_name }} · {{ appt.date|date:"j F Y" }}</p>
+    <form method="post" class="form mt-2" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="alert danger"><span>{{ form.non_field_errors|join:" " }}</span></div>{% endif %}
+      <fieldset class="form-group" style="border:0;padding:0;margin:0">
+        <legend style="font-weight:600;font-size:.92rem;margin-bottom:8px">{{ form.rating.label }}</legend>
+        <div class="rating-options">
+          {% for radio in form.rating %}
+            <label class="rating-option">
+              {{ radio.tag }}
+              <span><span class="stars" aria-hidden="true">{% for i in "12345" %}{% if forloop.counter <= radio.choice_value|add:"0" %}★{% endif %}{% endfor %}</span>{{ radio.choice_label }}</span>
+            </label>
+          {% endfor %}
+        </div>
+        {% for error in form.rating.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </fieldset>
+      <div class="form-group">
+        <label for="{{ form.feedback.id_for_label }}">{{ form.feedback.label }}</label>
+        {{ form.feedback }}
+      </div>
+      <button class="btn btn-primary btn-lg" type="submit">Submit feedback</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

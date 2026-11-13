@@ -1,0 +1,21 @@
+<article class="card doctor-card">
+  <div class="who">
+    <div class="avatar" aria-hidden="true">{{ doctor.initials }}</div>
+    <div>
+      <h3>{{ doctor.display_name }}</h3>
+      <p class="specialty">{{ doctor.specialty|default:doctor.department.title }}</p>
+    </div>
+  </div>
+  <div class="row">
+    <span class="tag">{{ doctor.department.title }}</span>
+    <span class="slot-meta">{{ doctor.slot_minutes }}-minute visits</span>
+  </div>
+  {% if doctor.bio %}<p class="small muted mb-0">{{ doctor.bio|truncatechars:110 }}</p>{% endif %}
+  <div class="actions">
+    {% if doctor.is_accepting %}
+      <a class="btn btn-primary btn-sm" href="{% url 'book' %}?doctor={{ doctor.pk }}">Book with {{ doctor.user.last_name|default:doctor.user.username }}</a>
+    {% else %}
+      <span class="tag">Not accepting bookings</span>
+    {% endif %}
+  </div>
+</article>

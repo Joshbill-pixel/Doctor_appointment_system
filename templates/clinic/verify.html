@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Verify an appointment{% endblock %}
+{% block content %}
+<section class="container narrow">
+  <div class="verify-hero">
+    <span class="eyebrow">Letter verification</span>
+    <h1>Is this appointment genuine?</h1>
+    <p class="muted">Enter the <strong>Appointment ID</strong> (e.g. BSU-K7Q2X9) or the <strong>verification token</strong> printed on the letter, or scan the QR code with your phone camera.</p>
+  </div>
+
+  <form class="card verify-search" method="get" action="{% url 'verify' %}" role="search">
+    <label for="code" class="small" style="font-weight:600">Appointment ID or token</label>
+    <div class="row mt-1">
+      <input id="code" name="code" type="text" value="{{ raw_code }}" placeholder="BSU-K7Q2X9 or XXXX-XXXX-XXXX-XXXX"
+             autocomplete="off" spellcheck="false" required
+             style="border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface);color:var(--ink);font:inherit">
+      <button class="btn btn-primary" type="submit">Verify</button>
+    </div>
+    <p class="form-help mt-1">Letters are never O, 0, I or 1, so codes are easy to read aloud.</p>
+  </form>
+
+  {% if searched %}
+    <div class="mt-3 stack">
+      <div class="verdict {{ verdict.tone }}" role="status">
+        <div class="ring" aria-hidden="true">{% if verdict.tone == 'success' %}✓{% elif verdict.tone == 'warning' %}!{% else %}✕{% endif %}</div>
+        <div>
+          <h2>{{ verdict.title }}</h2>
+          <p>{{ verdict.message }}</p>
+        </div>
+      </div>
+
+      {% if appt %}
+      <div class="card">
+        <div class="card-title">
+          <h3>Appointment details</h3>
+          <span class="tiny muted">Personal details are partly hidden for privacy.</span>
+        </div>
+        <dl class="kv">
+          <dt>Appointment ID</dt><dd><span class="id-chip">{{ appt.display_id }}</span></dd>
+          <dt>Patient</dt><dd>{{ appt.masked_patient_name }}</dd>
+          <dt>Doctor</dt><dd>{{ appt.doctor.display_name }}</dd>
+          <dt>Department</dt><dd>{{ appt.department.title }}</dd>
+          <dt>Date</dt><dd>{{ appt.date|date:"l, j F Y" }}</dd>
+          <dt>Time</dt><dd>{{ appt.start_time|time:"g:i A" }} – {{ appt.end_time|time:"g:i A" }}</dd>
+          <dt>Status</dt><dd><span class="badge {{ appt.status_tone }}">{{ appt.get_status_display }}</span></dd>
+        </dl>
+      </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

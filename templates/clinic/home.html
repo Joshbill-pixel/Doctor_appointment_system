@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Book a doctor online{% endblock %}
+{% block body_class %}home{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow">Benue State University · Medical Consultation</span>
+      <h1>Expert care, booked in a minute.</h1>
+      <p class="lead">Choose a specialist, pick a free time and receive a printable appointment letter with a QR code. Anyone can verify it instantly, with no paperwork queues.</p>
+      <div class="hero-actions">
+        {% if user.is_authenticated and not is_doctor %}
+          <a class="btn btn-primary btn-lg" href="{% url 'book' %}">Book an appointment</a>
+        {% elif not user.is_authenticated %}
+          <a class="btn btn-primary btn-lg" href="{% url 'signup' %}">Create a free account</a>
+        {% else %}
+          <a class="btn btn-primary btn-lg" href="{% url 'doctor_dashboard' %}">Open doctor portal</a>
+        {% endif %}
+        <a class="btn btn-outline-light btn-lg" href="{% url 'verify' %}">Verify a letter</a>
+      </div>
+      <div class="trust-row">
+        <span class="trust-pill">🖨️ Printable PDF letter</span>
+        <span class="trust-pill">🔐 Secure verification token</span>
+        <span class="trust-pill">🔔 Email and in-app reminders</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="frame"><img src="{% static 'img/hero.png' %}" alt="A doctor attending to a patient" width="793" height="550"></div>
+      <div class="float-card">
+        <div class="dot" aria-hidden="true">✅</div>
+        <div><strong>Verify in seconds</strong><span>Enter the ID or scan the QR code on any letter.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stats-bar" aria-label="Portal at a glance">
+  <div class="container">
+    <div class="card">
+      <div class="stat"><strong>{{ stats.doctors }}</strong><span>Specialist doctors</span></div>
+      <div class="stat"><strong>{{ stats.departments }}</strong><span>Departments</span></div>
+      <div class="stat"><strong>{{ stats.completed }}</strong><span>Consultations completed</span></div>
+      <div class="stat"><strong>24/7</strong><span>Online booking</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="departments">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Departments</span>
+      <h2>Care for every stage of life</h2>
+      <p>From routine check-ups to specialist services, find the right department and book with a doctor who treats your condition every day.</p>
+    </div>
+    <div class="dept-grid">
+      {% for dept in departments %}
+        <a class="dept-card" href="{% url 'doctors' %}?dept={{ dept.slug }}">
+          <span class="dept-icon" aria-hidden="true">{{ dept.icon }}</span>
+          <h3>{{ dept.title }}</h3>
+          <p>{{ dept.description }}</p>
+          <span class="foot"><span>{{ dept.doctor_count }} doctor{{ dept.doctor_count|pluralize }}</span><span>View →</span></span>
+        </a>
+      {% empty %}
+        <div class="card empty" style="grid-column:1/-1"><div class="big">🏥</div><h3>Departments are being set up</h3><p>Please check back soon.</p></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">How it works</span>
+      <h2>From sign-up to check-in in four steps</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><h3>Create your account</h3><p>Register once with your email and phone. Your details are reused for every booking.</p></div>
+      <div class="step"><h3>Choose a doctor &amp; time</h3><p>See live free slots for each specialist and pick the one that suits you.</p></div>
+      <div class="step"><h3>Print your letter</h3><p>Download the appointment letter with its ID, verification token and QR code.</p></div>
+      <div class="step"><h3>Attend &amp; rate</h3><p>Get a reminder the day before, then share feedback after your visit.</p></div>
+    </div>
+  </div>
+</section>
+
+{% if doctors %}
+<section class="section">
+  <div class="container">
+    <div class="row-between" style="margin-bottom:24px">
+      <div><span class="eyebrow">Our doctors</span><h2 style="margin:0">Meet the specialists</h2></div>
+      <a class="btn btn-outline" href="{% url 'doctors' %}">View all doctors</a>
+    </div>
+    <div class="doctor-grid">
+      {% for doctor in doctors %}
+        {% include "partials/doctor_card.html" %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="band">
+      <div class="inner split" style="align-items:center">
+        <div>
+          <span class="eyebrow" style="color:#FDE68A">Appointment letters you can trust</span>
+          <h2>Every letter can be checked in seconds</h2>
+          <p>Each appointment gets a public ID such as <strong>BSU-K7Q2X9</strong> and a private verification token. Both are printed on your letter, and the QR code takes anyone straight to the check page.</p>
+          <ul class="check-list">
+            <li>Shows whether the appointment is scheduled, completed, missed or cancelled</li>
+            <li>Reveals only masked patient details for privacy</li>
+            <li>Cancelled letters stop verifying the moment you cancel</li>
+          </ul>
+        </div>
+        <div class="verify-mini">
+          <h3>Verify a letter</h3>
+          <p>Enter the appointment ID or token from the letter.</p>
+          <form method="get" action="{% url 'verify' %}" class="form" style="gap:12px">
+            <input name="code" type="text" placeholder="BSU-K7Q2X9 or XXXX-XXXX-XXXX-XXXX" aria-label="Appointment ID or token" required
+                   style="width:100%;font:inherit;border:1.5px solid #CBD5E1;border-radius:12px;padding:12px 14px;text-transform:uppercase">
+            <button class="btn btn-primary btn-block" type="submit">Check appointment</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="container narrow">
+    <div class="section-head" style="margin-bottom:24px">
+      <span class="eyebrow">Questions</span>
+      <h2>Good to know</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Do I need an account to book?</summary>
+        <p>Yes. An account lets you manage appointments, receive reminders and download letters. Creating one takes under a minute.</p>
+      </details>
+      <details>
+        <summary>How do I print my appointment letter?</summary>
+        <p>Open the appointment and select <em>Download letter (PDF)</em>. The PDF opens in your browser, where you can print it or save it to your phone.</p>
+      </details>
+      <details>
+        <summary>Can I change or cancel an appointment?</summary>
+        <p>Yes, up to {{ cutoff_hours }} hours before the visit. After that, please call the clinic for help.</p>
+      </details>
+      <details>
+        <summary>What if someone asks me to verify my letter?</summary>
+        <p>Anyone can check an appointment at <a href="{% url 'verify' %}">the verification page</a> by entering its ID or token, or by scanning the QR code. Patient names are partly hidden on that page.</p>
+      </details>
+      <details>
+        <summary>In an emergency, what should I do?</summary>
+        <p>Do not wait for an online appointment. Go to the nearest emergency unit or call your local emergency number straight away.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="container" style="padding-bottom:12px">
+  <div class="cta">
+    <span class="eyebrow">Ready when you are</span>
+    <h2>Your next consultation is a few taps away</h2>
+    <p>Join the portal, choose a time that works for you and carry your letter with confidence.</p>
+    <div class="row" style="justify-content:center">
+      {% if user.is_authenticated and not is_doctor %}
+        <a class="btn btn-primary btn-lg" href="{% url 'book' %}">Book now</a>
+      {% elif not user.is_authenticated %}
+        <a class="btn btn-primary btn-lg" href="{% url 'signup' %}">Create your account</a>
+        <a class="btn btn-outline btn-lg" href="{% url 'login' %}">I already have an account</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

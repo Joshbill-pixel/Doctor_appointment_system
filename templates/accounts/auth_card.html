@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+{% block content %}
+<section class="container auth-shell">
+  <div class="auth-layout">
+    <div class="auth-card{% if wide %} wide{% endif %}">
+      <div class="head">
+        <div class="mark" aria-hidden="true">✚</div>
+        <h1 style="font-size:1.75rem">{{ title }}</h1>
+        {% if intro %}<p>{{ intro }}</p>{% endif %}
+      </div>
+      <div class="card">
+        <form method="post" class="form" novalidate>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert danger" role="alert"><span>{{ form.non_field_errors|join:" " }}</span></div>
+          {% endif %}
+          {% if wide %}
+            <div class="form-row">
+              {% for field in form %}
+                {% if field.name == "first_name" or field.name == "last_name" %}
+                  <div class="form-group{% if field.errors %} has-error{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+            {% for field in form %}
+              {% if field.name != "first_name" and field.name != "last_name" %}
+                {% include "partials/auth_field.html" %}
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            {% include "partials/form_fields.html" %}
+          {% endif %}
+
+          {% if show_forgot %}
+            <div style="text-align:right;margin-top:-6px"><a class="small" href="{% url 'password_reset' %}">Forgot password?</a></div>
+          {% endif %}
+          <button class="btn btn-primary btn-block btn-lg" type="submit">{{ submit_label }}</button>
+        </form>
+      </div>
+      {% if alt_link_url %}
+        <p class="foot">{% if alt_prompt %}{{ alt_prompt }} {% endif %}<a href="{{ alt_link_url }}">{{ alt_link_text }}</a></p>
+      {% endif %}
+    </div>
+
+    <aside class="auth-aside" aria-label="Why use the portal">
+      <span class="eyebrow" style="color:#FDE68A">Why patients use this portal</span>
+      <h3 style="font-size:1.35rem;margin-bottom:14px">Your care, organised in one place</h3>
+      <ul class="check-list">
+        <li>Book specialists across every department</li>
+        <li>Printable letter with an ID, token and QR code</li>
+        <li>Reminders by email and in the portal</li>
+        <li>Reschedule or cancel online before your visit</li>
+        <li>Your details and visit history kept confidential</li>
+      </ul>
+      <p class="tiny mt-3" style="opacity:.85">Secure sign-in. We never share your health information.</p>
+    </aside>
+  </div>
+</section>
+{% endblock %}

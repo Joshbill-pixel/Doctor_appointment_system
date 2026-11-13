@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}My appointments{% endblock %}
+{% block content %}
+<section class="container page-head">
+  <span class="eyebrow">Appointments</span>
+  <div class="row-between">
+    <h1 style="font-size:2.2rem;margin:0">My appointments</h1>
+    <a class="btn btn-primary" href="{% url 'book' %}">+ Book a visit</a>
+  </div>
+</section>
+<section class="container" style="padding:22px 22px 64px">
+  <nav class="tabs" aria-label="Filter appointments">
+    <a href="?tab=upcoming" class="{% if tab == 'upcoming' %}active{% endif %}">Upcoming</a>
+    <a href="?tab=past" class="{% if tab == 'past' %}active{% endif %}">Past</a>
+    <a href="?tab=all" class="{% if tab == 'all' %}active{% endif %}">All</a>
+  </nav>
+
+  <div class="card card-flush mt-3">
+    {% for appt in appointments %}
+      {% include "partials/appt_item.html" %}
+    {% empty %}
+      <div class="empty">
+        <div class="big">📭</div>
+        <h3>Nothing here yet</h3>
+        <p>{% if tab == 'upcoming' %}You have no upcoming visits.{% else %}No appointments to show.{% endif %}</p>
+        <a class="btn btn-primary" href="{% url 'book' %}">Book an appointment</a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Appointment {{ appt.display_id }}{% endblock %}
+{% block content %}
+<section class="container page-head">
+  <a class="small" href="{% url 'my_appointments' %}">← All appointments</a>
+  <div class="detail-head mt-1">
+    <div>
+      <span class="eyebrow">Appointment</span>
+      <h1 style="font-size:2.1rem;margin-bottom:8px">{{ appt.doctor.display_name }}</h1>
+      <span class="badge {{ appt.status_tone }}">{{ appt.get_status_display }}</span>
+    </div>
+    <div class="id-chip" aria-label="Appointment ID">
+      <small>ID</small>{{ appt.display_id }}
+    </div>
+  </div>
+</section>
+
+<section class="container" style="padding:22px 22px 64px">
+  {% if appt.status != 'cancelled' %}
+  <div class="card" style="margin-bottom:22px">
+    <div class="progress" aria-hidden="true">
+      <div class="on"></div>
+      <div class="{% if appt.status == 'completed' or appt.status == 'no_show' %}on{% endif %}"></div>
+      <div class="{% if appt.status == 'completed' %}on{% endif %}"></div>
+    </div>
+    <div class="progress-labels">
+      <span class="on">Booked</span>
+      <span class="{% if appt.status == 'completed' or appt.status == 'no_show' %}on{% endif %}">Visit</span>
+      <span class="{% if appt.status == 'completed' %}on{% endif %}">Completed</span>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="split">
+    <div class="stack">
+      <div class="card">
+        <div class="card-title"><h3>Visit details</h3></div>
+        <dl class="kv">
+          <dt>Doctor</dt><dd>{{ appt.doctor.display_name }}</dd>
+          <dt>Department</dt><dd>{{ appt.department.title }}</dd>
+          <dt>Date</dt><dd>{{ appt.date|date:"l, j F Y" }}</dd>
+          <dt>Time</dt><dd>{{ appt.start_time|time:"g:i A" }} – {{ appt.end_time|time:"g:i A" }}</dd>
+          <dt>Venue</dt><dd>{{ clinic.address }}</dd>
+          <dt>Reason</dt><dd class="muted-value">{{ appt.reason|linebreaksbr }}</dd>
+          <dt>Verification token</dt><dd><span class="id-chip" style="font-size:.85rem">{{ appt.display_token }}</span></dd>
+          <dt>Booked on</dt><dd class="muted-value">{{ appt.created_at|date:"j M Y, g:i A" }}</dd>
+          {% if appt.status == 'cancelled' %}
+            <dt>Cancelled</dt><dd class="muted-value">{{ appt.cancelled_at|date:"j M Y, g:i A" }}{% if appt.cancel_reason %} · {{ appt.cancel_reason }}{% endif %}</dd>
+          {% endif %}
+        </dl>
+      </div>
+
+      {% if appt.rating %}
+      <div class="card">
+        <div class="card-title"><h3>Your feedback</h3></div>
+        <p class="rating-option" style="display:block"><span class="stars" aria-label="{{ appt.rating }} out of 5 stars">{% for i in "12345" %}{% if forloop.counter <= appt.rating %}★{% else %}☆{% endif %}{% endfor %}</span></p>
+        {% if appt.feedback %}<p class="mb-0">{{ appt.feedback }}</p>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <h3>Your letter</h3>
+        {% if appt.status == 'cancelled' %}
+          <p class="muted mb-0">This appointment was cancelled, so its letter is no longer valid.</p>
+        {% else %}
+          <p class="muted small">Print this letter or keep it on your phone. Show it at reception on the day.</p>
+          <div class="panel-actions">
+            <a class="btn btn-primary btn-block" href="{% url 'appointment_letter' appt.reference %}" target="_blank" rel="noopener">Download letter (PDF)</a>
+            <a class="btn btn-ghost btn-block" href="{% url 'verify' %}?code={{ appt.display_id|urlencode }}">Check verification page</a>
+          </div>
+        {% endif %}
+      </div>
+
+      {% if appt.status == 'scheduled' %}
+      <div class="card">
+        <h3>Change this visit</h3>
+        {% if appt.can_change %}
+          <div class="panel-actions mt-2">
+            <a class="btn btn-outline btn-block" href="{% url 'appointment_reschedule' appt.reference %}">Reschedule</a>
+          </div>
+          <details class="disclose details-action">
+            <summary>Cancel this appointment</summary>
+            <form method="post" action="{% url 'appointment_cancel' appt.reference %}" class="form" data-confirm="Cancel this appointment? Your letter will stop being valid.">
+              {% csrf_token %}
+              {% for field in cancel_form %}
+                <div class="form-group"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>
+              {% endfor %}
+              <button class="btn btn-danger btn-block" type="submit">Confirm cancellation</button>
+            </form>
+          </details>
+        {% else %}
+          <p class="muted small mb-0">Changes close {{ cutoff_hours }} hours before the visit. Please call the clinic on {{ clinic.phone }} if you need help.</p>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if appt.status == 'completed' and not appt.rating %}
+      <div class="card tint">
+        <h3>How was your visit?</h3>
+        <p class="muted small">Your feedback helps us improve care.</p>
+        <a class="btn btn-primary btn-block" href="{% url 'appointment_feedback' appt.reference %}">Rate this visit</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

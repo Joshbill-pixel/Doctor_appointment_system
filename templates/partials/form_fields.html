@@ -1,0 +1,23 @@
+{% if form.non_field_errors %}
+  <div class="alert danger form-errors" role="alert"><span>{{ form.non_field_errors|join:" " }}</span></div>
+{% endif %}
+{% for field in form %}
+  {% if field.is_hidden %}
+    {{ field }}
+  {% elif field.field.widget.input_type == "checkbox" %}
+    <div class="form-group checkbox-row{% if field.errors %} has-error{% endif %}">
+      {{ field }}
+      <div>
+        <label for="{{ field.id_for_label }}">{{ field.label|safe }}</label>
+        {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+    </div>
+  {% else %}
+    <div class="form-group{% if field.errors %} has-error{% endif %}">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.help_text %}<p class="form-help">{{ field.help_text }}</p>{% endif %}
+      {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+  {% endif %}
+{% endfor %}

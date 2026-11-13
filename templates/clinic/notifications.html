@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<section class="container page-head">
+  <div class="row-between">
+    <div>
+      <span class="eyebrow">Inbox</span>
+      <h1 style="font-size:2.2rem;margin:0">Notifications</h1>
+    </div>
+    {% if items %}
+    <form method="post" action="{% url 'notifications_read_all' %}">{% csrf_token %}<button class="btn btn-ghost btn-sm" type="submit">Mark all as read</button></form>
+    {% endif %}
+  </div>
+</section>
+<section class="container" style="padding:22px 22px 64px">
+  <div class="card card-flush notice-list">
+    {% for n in items %}
+      <div class="item{% if not n.is_read %} unread{% endif %}">
+        <span class="ico" aria-hidden="true">{% if n.is_read %}✉️{% else %}🔔{% endif %}</span>
+        <div>
+          <h4>{{ n.title }}{% if not n.is_read %}<span class="unread-dot" aria-label="Unread"></span>{% endif %}</h4>
+          <p>{{ n.message }}</p>
+          <p class="tiny muted mt-1">{{ n.created_at|date:"j M Y, g:i A" }}</p>
+        </div>
+        {% if n.link %}<a class="btn btn-ghost btn-sm" href="{{ n.link }}">Open</a>{% else %}<span></span>{% endif %}
+      </div>
+    {% empty %}
+      <div class="empty"><div class="big">🎉</div><h3>No notifications</h3><p>Appointment updates and reminders will appear here.</p></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

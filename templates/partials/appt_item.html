@@ -1,0 +1,12 @@
+<a class="appt-item" href="{{ appt.get_absolute_url }}">
+  <div class="date-block" aria-hidden="true">
+    <small>{{ appt.date|date:"M" }}</small>
+    <b>{{ appt.date|date:"j" }}</b>
+    <small>{{ appt.date|date:"D" }}</small>
+  </div>
+  <div>
+    <h4>{{ appt.doctor.display_name }}</h4>
+    <p class="meta"><span>{{ appt.department.title }}</span><span>{{ appt.start_time|time:"g:i A" }}</span><span>{{ appt.display_id }}</span></p>
+  </div>
+  <span class="badge {{ appt.status_tone }}">{{ appt.get_status_display }}</span>
+</a>

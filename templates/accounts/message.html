@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<section class="container auth-shell">
+  <div class="auth-card">
+    <div class="card" style="text-align:center;padding:40px 32px">
+      <div class="avatar lg" style="margin:0 auto 18px;font-size:1.8rem" aria-hidden="true">✓</div>
+      <h1 style="font-size:1.7rem">{{ title }}</h1>
+      <p class="muted">{{ body }}</p>
+      {% if action_url %}<a class="btn btn-primary btn-lg mt-2" href="{{ action_url }}">{{ action_label }}</a>{% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
