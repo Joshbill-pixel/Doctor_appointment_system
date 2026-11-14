@@ -13,6 +13,10 @@ A Django web portal for booking doctor consultations at Benue State University's
 - **Reminders:** `send_reminders` notifies patients of tomorrow's visits. Safe to run repeatedly.
 - **Admin:** search, filters, bulk outcome actions, and doctor schedules.
 
+## Deployment
+
+The project is ready for [Render](https://render.com). See **[DEPLOY_RENDER.md](DEPLOY_RENDER.md)** for step-by-step instructions, or deploy directly from the included `render.yaml` Blueprint.
+
 ## Setup
 
 Requires Python 3.10 or newer.
@@ -49,6 +53,12 @@ Set these environment variables for anything beyond local testing:
 | `DJANGO_EMAIL_HOST`, `DJANGO_EMAIL_PORT`, `DJANGO_EMAIL_HOST_USER`, `DJANGO_EMAIL_HOST_PASSWORD`, `DJANGO_EMAIL_USE_TLS` | SMTP settings. |
 | `DJANGO_DEFAULT_FROM_EMAIL` | Sender address for system emails. |
 | `CLINIC_PHONE`, `CLINIC_EMAIL` | Contact details shown on the site and letters. |
+| `DATABASE_URL` | PostgreSQL connection string. Unset locally (uses SQLite). Render sets it from its database. |
+| `DJANGO_SSL_REDIRECT` | `True` to redirect HTTP to HTTPS inside the app. Default `False` (Render redirects at its edge). |
+| `DJANGO_HSTS_SECONDS` | HSTS max-age in production. Default `3600`. |
+| `DJANGO_LOG_LEVEL` | Log level for the console output. Default `INFO`. |
+
+On Render, `RENDER_EXTERNAL_HOSTNAME` is read automatically: that host is added to `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`, and `SITE_URL` falls back to it. Debug mode is off by default when `RENDER` is set.
 
 Clinic name, address, booking window (`BOOKING_WINDOW_DAYS`) and the cancellation cutoff (`CHANGE_CUTOFF_HOURS`) are in `medical/settings.py`.
 
@@ -85,7 +95,8 @@ static/js/        progressive enhancement (slot picker, theme, menus)
 
 ## Troubleshooting
 
-- **Page appears without styling (plain white or default blue links):** open the browser's developer tools, go to the Network tab, reload, and check that `/static/css/app.css` returns status 200. The project serves its own static files in every mode, so a 404 usually means the folder was not unzipped in full or the server was started from a different folder.
+- **Page appears without styling (plain white or default blue links):** open the browser's developer tools, go to the Network tab, reload, and check that `/static/css/app.css` returns status 200. Static files are served by WhiteNoise from the `staticfiles/` folder, which `python manage.py collectstatic` creates. Run that command if you changed files in `static/` while `DEBUG` is off.
+- **`DisallowedHost` error in production:** add the host name to `DJANGO_ALLOWED_HOSTS` (Render's own host is added automatically).
 - **Database errors on first run:** run `python manage.py migrate` before the server starts.
 
 ## Password fields
@@ -100,8 +111,10 @@ python manage.py test clinic accounts
 
 ## Before going live
 
-- Set a real `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False` and the production `ALLOWED_HOSTS`. With `DEBUG` off, secure cookies, HSTS-friendly headers and `X-Frame-Options: DENY` are enabled automatically. Set `DJANGO_BEHIND_HTTPS_PROXY=False` if the site is not behind a proxy that sets `X-Forwarded-Proto`.
-- Configure SMTP so reminders and password resets are actually delivered.
-- Put the site behind HTTPS, since the QR codes and verify links depend on it.
+- Set your real clinic phone number and email in the Render dashboard (`CLINIC_PHONE`, `CLINIC_EMAIL`), and check the clinic name and address in `medical/settings.py`.
+- Configure SMTP (`DJANGO_EMAIL_*` variables) so reminders and password resets are actually delivered. Until then, emails are only written to the logs.
+- Set `SITE_URL` to your final public address if you attach a custom domain, because it is printed into every letter's QR code.
 - Consider encrypting health-related fields at rest, and review your data-retention policy for visit reasons and doctor notes.
 - Add login rate limiting at the web server or with a package such as `django-axes`.
+- Do not run `seed_demo` against a production database, since it creates demo accounts with known passwords.
+

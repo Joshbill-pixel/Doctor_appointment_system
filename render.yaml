@@ -1,0 +1,39 @@
+# Render Blueprint: creates the web service and its PostgreSQL database in one step.
+# Deploy with: Render dashboard -> New -> Blueprint -> select this repository.
+databases:
+  - name: bsu-medical-db
+    plan: free            # free databases expire after 30 days; upgrade to a paid plan for long-term use
+    databaseName: bsu_medical
+    databaseUser: bsu_medical
+    region: oregon
+
+services:
+  - type: web
+    name: bsu-medical-portal
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: bash build.sh
+    startCommand: >-
+      python manage.py migrate --no-input &&
+      gunicorn medical.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 --access-logfile -
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true          # Render generates a random 256-bit secret
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bsu-medical-db
+          property: connectionString
+      - key: DJANGO_ALLOWED_HOSTS
+        value: localhost,127.0.0.1   # Render's own hostname is added automatically
+      - key: CLINIC_PHONE
+        value: "+234 800 000 0000"   # replace with the real number
+      - key: CLINIC_EMAIL
+        value: medical@bsu.edu.ng    # replace with the real address
+      - key: DJANGO_EMAIL_BACKEND
+        value: django.core.mail.backends.console.EmailBackend   # switch to SMTP before go-live
